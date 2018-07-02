@@ -231,7 +231,7 @@ NSString * const kFXKeychainErrorDomain = @"FXKeychainErrorDomain";
 
     //fail if object is invalid
     NSAssert(!object || (object && data), @"FXKeychain failed to encode object for key '%@', error: %@", key, *error);
-    if ((!object || (object && data)) && self.globalErrorHandler) {
+    if (!(!object || (object && data)) && self.globalErrorHandler) {
         self.globalErrorHandler([NSString stringWithFormat:@"FXKeychain failed to encode object for key '%@'.", key], (error && *error) ? *error : nil);
     }
     
