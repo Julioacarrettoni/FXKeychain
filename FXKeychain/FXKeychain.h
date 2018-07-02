@@ -65,6 +65,8 @@ extern NSString * _Nonnull const kFXKeychainErrorDomain;
 
 + (nonnull instancetype)defaultKeychain;
 
+@property (nonatomic, strong, nullable) void (^globalErrorHandler)(NSString * _Nonnull message, NSError * _Nullable error);
+
 @property (nonatomic, readonly, nullable) NSString *service;
 @property (nonatomic, readonly, nullable) NSString *accessGroup;
 @property (nonatomic, assign) FXKeychainAccess accessibility;

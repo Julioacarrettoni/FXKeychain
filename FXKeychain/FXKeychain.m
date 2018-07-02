@@ -164,6 +164,9 @@ NSString * const kFXKeychainErrorDomain = @"FXKeychainErrorDomain";
         {
             *error = [NSError errorWithDomain:kFXKeychainErrorDomain code:status userInfo:nil];
         }
+        if (self.globalErrorHandler) {
+            self.globalErrorHandler([NSString stringWithFormat:@"FXKeychain failed to retrieve data for key '%@', error: %ld", key, (long)status], nil);
+        }
 	}
 	return CFBridgingRelease(data);
 }
@@ -201,6 +204,10 @@ NSString * const kFXKeychainErrorDomain = @"FXKeychainErrorDomain";
             //safe to encode as a string
             data = [object dataUsingEncoding:NSUTF8StringEncoding];
         }
+        
+        if (self.globalErrorHandler) {
+            self.globalErrorHandler(@"Couldn't encode data", (error && *error) ? *error : nil);
+        }
     }
     
     //if not encoded as a string, encode as plist
@@ -219,12 +226,14 @@ NSString * const kFXKeychainErrorDomain = @"FXKeychainErrorDomain";
         }
         
 #endif
-        
     }
 
     //fail if object is invalid
     NSAssert(!object || (object && data), @"FXKeychain failed to encode object for key '%@', error: %@", key, *error);
-
+    if (self.globalErrorHandler) {
+        self.globalErrorHandler([NSString stringWithFormat:@"FXKeychain failed to encode object for key '%@'.", key], (error && *error) ? *error : nil);
+    }
+    
     if (data)
     {
         //update values
@@ -260,6 +269,9 @@ NSString * const kFXKeychainErrorDomain = @"FXKeychainErrorDomain";
             {
                 *error = [NSError errorWithDomain:kFXKeychainErrorDomain code:status userInfo:nil];
             }
+            if (self.globalErrorHandler) {
+                self.globalErrorHandler([NSString stringWithFormat:@"FXKeychain failed to store data for key '%@', error: %ld", key, (long)status], nil);
+            }
             return NO;
         }
     }
@@ -286,6 +298,9 @@ NSString * const kFXKeychainErrorDomain = @"FXKeychainErrorDomain";
             if (error != NULL)
             {
                 *error = [NSError errorWithDomain:kFXKeychainErrorDomain code:status userInfo:nil];
+            }
+            if (self.globalErrorHandler) {
+                self.globalErrorHandler([NSString stringWithFormat:@"FXKeychain failed to delete data for key '%@', error: %ld", key, (long)status], nil);
             }
             return NO;
         }
@@ -353,11 +368,18 @@ NSString * const kFXKeychainErrorDomain = @"FXKeychainErrorDomain";
         if (!object)
         {
             NSLog(@"FXKeychain failed to decode data for key '%@', error: %@", key, *error);
+            if (self.globalErrorHandler) {
+                self.globalErrorHandler([NSString stringWithFormat:@"FXKeychain failed to decode data for key '%@'", key], (error && *error) ? *error : nil);
+            }
         }
         return object;
     }
     else
     {
+        if (self.globalErrorHandler) {
+            self.globalErrorHandler([NSString stringWithFormat:@"Couldn't decode data for key '%@'", key], (error && *error) ? *error : nil);
+        }
+        
         //no value found
         return nil;
     }
