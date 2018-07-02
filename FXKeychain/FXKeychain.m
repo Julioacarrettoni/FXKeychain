@@ -173,7 +173,8 @@ NSString * const kFXKeychainErrorDomain = @"FXKeychainErrorDomain";
 
 - (BOOL)setObject:(id)object forKey:(id)key
 {
-    return [self setObject:object forKey:key error:nil];
+    NSError *error;
+    return [self setObject:object forKey:key error:&error];
 }
 
 - (BOOL)setObject:(id)object forKey:(id)key error:(NSError **)error
@@ -205,8 +206,8 @@ NSString * const kFXKeychainErrorDomain = @"FXKeychainErrorDomain";
             data = [object dataUsingEncoding:NSUTF8StringEncoding];
         }
         
-        if (self.globalErrorHandler) {
-            self.globalErrorHandler(@"Couldn't encode data", (error && *error) ? *error : nil);
+        if (error && *error && self.globalErrorHandler) {
+            self.globalErrorHandler(@"Couldn't encode data", *error);
         }
     }
     
@@ -230,7 +231,7 @@ NSString * const kFXKeychainErrorDomain = @"FXKeychainErrorDomain";
 
     //fail if object is invalid
     NSAssert(!object || (object && data), @"FXKeychain failed to encode object for key '%@', error: %@", key, *error);
-    if (self.globalErrorHandler) {
+    if ((!object || (object && data)) && self.globalErrorHandler) {
         self.globalErrorHandler([NSString stringWithFormat:@"FXKeychain failed to encode object for key '%@'.", key], (error && *error) ? *error : nil);
     }
     
@@ -315,7 +316,8 @@ NSString * const kFXKeychainErrorDomain = @"FXKeychainErrorDomain";
 
 - (BOOL)removeObjectForKey:(id)key
 {
-    return [self removeObjectForKey:key error:nil];
+    NSError *error;
+    return [self removeObjectForKey:key error:&error];
 }
 
 - (BOOL)removeObjectForKey:(id)key error:(NSError **)error
@@ -325,7 +327,8 @@ NSString * const kFXKeychainErrorDomain = @"FXKeychainErrorDomain";
 
 - (id)objectForKey:(id)key
 {
-    return [self objectForKey:key error:nil];
+    NSError *error;
+    return [self objectForKey:key error:&error];
 }
 
 - (id)objectForKey:(id)key error:(NSError **) error
@@ -376,8 +379,8 @@ NSString * const kFXKeychainErrorDomain = @"FXKeychainErrorDomain";
     }
     else
     {
-        if (self.globalErrorHandler) {
-            self.globalErrorHandler([NSString stringWithFormat:@"Couldn't decode data for key '%@'", key], (error && *error) ? *error : nil);
+        if (error && *error && self.globalErrorHandler) {
+            self.globalErrorHandler([NSString stringWithFormat:@"Couldn't decode data for key '%@'", key], *error);
         }
         
         //no value found
